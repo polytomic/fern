@@ -26,7 +26,7 @@ export async function createFernDirectoryAndWorkspace({
         if (organization == null) {
             const token = await askToLogin();
             if (token.type === "user") {
-                const user = { username: "fake-user" };
+                const user = { username: "polytomic" };
                 organization = kebabCase(user.username);
     
             } else {
