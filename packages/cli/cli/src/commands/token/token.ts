@@ -11,7 +11,7 @@ export async function generateToken({
     orgId: string;
     taskContext: TaskContext;
 }): Promise<void> {
-    const token = await askToLogin(taskContext);
+    const token = await askToLogin();
     const venus = createVenusService({ token: token.value });
     const response = await venus.registry.generateRegistryTokens({
         organizationId: FernVenusApi.OrganizationId(orgId)

@@ -1,4 +1,3 @@
-import { createOrganizationIfDoesNotExist } from "@fern-api/auth";
 import { askToLogin } from "@fern-api/login";
 import { Project } from "@fern-api/project-loader";
 import { runRemoteGenerationForDocsWorkspace } from "@fern-api/remote-workspace-runner";
@@ -22,19 +21,10 @@ export async function generateDocsWorkspace({
         return;
     }
 
-    const token = await cliContext.runTask(async (context) => {
-        return askToLogin(context);
+    const token = await cliContext.runTask(async () => {
+        return askToLogin();
     });
 
-    if (token.type === "user") {
-        await cliContext.runTask(async (context) => {
-            await createOrganizationIfDoesNotExist({
-                organization: project.config.organization,
-                token,
-                context
-            });
-        });
-    }
 
     cliContext.instrumentPostHogEvent({
         orgId: project.config.organization,

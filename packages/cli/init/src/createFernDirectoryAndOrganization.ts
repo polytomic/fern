@@ -1,15 +1,13 @@
-import { createOrganizationIfDoesNotExist, getCurrentUser } from "@fern-api/auth";
 import { createVenusService } from "@fern-api/core";
-import { AbsoluteFilePath, cwd, doesPathExist, join, RelativeFilePath } from "@fern-api/fs-utils";
+import { AbsoluteFilePath, RelativeFilePath, cwd, doesPathExist, join } from "@fern-api/fs-utils";
 import { askToLogin } from "@fern-api/login";
 import {
     FERN_DIRECTORY,
-    loadProjectConfig,
+    PROJECT_CONFIG_FILENAME,
     ProjectConfigSchema,
-    PROJECT_CONFIG_FILENAME
+    loadProjectConfig
 } from "@fern-api/project-configuration";
 import { TaskContext } from "@fern-api/task-context";
-import chalk from "chalk";
 import { mkdir, writeFile } from "fs/promises";
 import { kebabCase } from "lodash-es";
 
@@ -26,18 +24,11 @@ export async function createFernDirectoryAndWorkspace({
 
     if (!(await doesPathExist(pathToFernDirectory))) {
         if (organization == null) {
-            const token = await askToLogin(taskContext);
+            const token = await askToLogin();
             if (token.type === "user") {
-                const user = await getCurrentUser({ token, context: taskContext });
+                const user = { username: "fake-user" };
                 organization = kebabCase(user.username);
-                const didCreateOrganization = await createOrganizationIfDoesNotExist({
-                    organization,
-                    token,
-                    context: taskContext
-                });
-                if (didCreateOrganization) {
-                    taskContext.logger.info(`${chalk.green(`Created organization ${chalk.bold(organization)}`)}`);
-                }
+    
             } else {
                 const venus = createVenusService({ token: token.value });
                 const response = await venus.organization.getMyOrganizationFromScopedToken();

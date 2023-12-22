@@ -1,20 +1,20 @@
 import { AbsoluteFilePath, cwd, doesPathExist, resolve } from "@fern-api/fs-utils";
 import { GenerationLanguage } from "@fern-api/generators-configuration";
 import { initializeAPI, initializeDocs } from "@fern-api/init";
-import { LogLevel, LOG_LEVELS } from "@fern-api/logger";
+import { LOG_LEVELS, LogLevel } from "@fern-api/logger";
 import { askToLogin, login } from "@fern-api/login";
 import {
     GENERATORS_CONFIGURATION_FILENAME,
+    PROJECT_CONFIG_FILENAME,
     getFernDirectory,
-    loadProjectConfig,
-    PROJECT_CONFIG_FILENAME
+    loadProjectConfig
 } from "@fern-api/project-configuration";
-import { loadProject, Project } from "@fern-api/project-loader";
+import { Project, loadProject } from "@fern-api/project-loader";
 import { FernCliError } from "@fern-api/task-context";
 import { Argv } from "yargs";
 import { hideBin } from "yargs/helpers";
 import yargs from "yargs/yargs";
-import { loadOpenAPIFromUrl, LoadOpenAPIStatus } from "../../init/src/utils/loadOpenApiFromUrl";
+import { LoadOpenAPIStatus, loadOpenAPIFromUrl } from "../../init/src/utils/loadOpenApiFromUrl";
 import { CliContext } from "./cli-context/CliContext";
 import { getLatestVersionOfCli } from "./cli-context/upgrade-utils/getLatestVersionOfCli";
 import { addGeneratorToWorkspaces } from "./commands/add-generator/addGeneratorToWorkspaces";
@@ -527,8 +527,8 @@ function addRegisterCommand(cli: Argv<GlobalCliOptions>, cliContext: CliContext)
                 defaultToAllApiWorkspaces: false
             });
 
-            const token = await cliContext.runTask((context) => {
-                return askToLogin(context);
+            const token = await cliContext.runTask(() => {
+                return askToLogin();
             });
             await registerWorkspacesV1({
                 project,
@@ -555,8 +555,8 @@ function addRegisterV2Command(cli: Argv<GlobalCliOptions>, cliContext: CliContex
                 defaultToAllApiWorkspaces: false
             });
 
-            const token = await cliContext.runTask((context) => {
-                return askToLogin(context);
+            const token = await cliContext.runTask(() => {
+                return askToLogin();
             });
             await registerWorkspacesV2({
                 project,
@@ -684,16 +684,13 @@ function addFormatCommand(cli: Argv<GlobalCliOptions>, cliContext: CliContext) {
 function addWriteDefinitionCommand(cli: Argv<GlobalCliOptions>, cliContext: CliContext) {
     cli.command(
         "write-definition",
-        "Write underlying Fern Definition for OpenAPI specs and API Dependencies.",
+        false, // hide from help message
         (yargs) =>
             yargs.option("api", {
                 string: true,
                 description: "Only run the command on the provided API"
             }),
         async (argv) => {
-            cliContext.instrumentPostHogEvent({
-                command: "fern write-definition"
-            });
             await writeDefinitionForWorkspaces({
                 project: await loadProjectAndRegisterWorkspacesWithContext(cliContext, {
                     commandLineApiWorkspace: argv.api,
